@@ -39,8 +39,8 @@ php artisan vendor:publish --provider="Blood72\Iamport\IamportServiceProvider"
 
 ## Configuration
 
-```IAMPORT_KEY```와 ```IAMPORT_SECRET``` 값이 필요합니다.<br>
-It requires ```IAMPORT_KEY``` and ```IAMPORT_SECRET```.
+`IAMPORT_KEY`와 `IAMPORT_SECRET` 값이 필요합니다.<br>
+It requires `IAMPORT_KEY` and `IAMPORT_SECRET`.
 
 ```php
 // in iamport.php
@@ -58,6 +58,54 @@ You can use Facade or resolve methods.
 $payments = app('iamport')->getPayments();
 $payments = Iamport::getPayments();
 ```
+
+메서드 구성은 [Reference](#reference)의 API 문서를 보면 도움이 됩니다.<br>
+It is helpful to understand method for seeing API documents of [reference](#reference).
+
+1. `getPayment(...$impUid)`
+    ```php
+    // same result
+    $payment = Iamport::getPayment('imp_779297761907');
+    $payment = app('iamport')->getPayment(282589766101); // method adds 'imp_' automatically
+
+    // return \Illuminate\Support\Collection::class
+    $payments = Iamport::getPayment('imp_604050400483', 'imp_993488541671');
+    ```
+2. `getPayments($status = 'all', $options = [])`
+    ```php
+    // same result (TODO)
+    $payments = Iamport::getPayments('paid', ['limit' => 3]);
+    // $payments = Iamport::getPayments([
+    //     'status' => 'paid',
+    //     'limit' => 3,
+    // ]);
+    ```
+3. `findPayment($merchantUid, $status = null, array $options = [])`
+    ```php
+    $payment = Iamport::findPayment('merchant_1591942195747');
+    ```
+4. `findPayments($merchantUid, $status = null, array $options = [])`
+    ```php
+    $payment = Iamport::findPayment('merchant_1591942195747');
+    ```
+5. `setPreparePayment($merchantUid, $amount)` & `getPreparePayment($merchantUid)`
+    ```php
+    // return \Blood72\Iamport\Payloads\PreparedPayment::class
+    $payment = Iamport::setPreparePayment('b72-ae8ea2f204bd2285c03918ec321fa4ff', 124);
+    $payment = Iamport::getPreparePayment('b72-ae8ea2f204bd2285c03918ec321fa4ff');
+    ```
+6. `cancelPayment($impUid, ?int $amount = null, ?string $reason = null, array $options = [])`
+    ```php
+    // same result
+    Iamport::cancelPayment($impUid, $amount, $reason);
+    Iamport::cancelPayment([
+        'imp_uid' => $impUid,
+        'amount' => $amount,
+        'reason' => $reason,
+    ]);
+    ```
+
+TODO
 
 ## Reference
 
