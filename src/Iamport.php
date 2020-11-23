@@ -8,6 +8,7 @@ use Blood72\Iamport\Formats\IamportUid;
 use Blood72\Iamport\Formats\Sorting;
 use Blood72\Iamport\Formats\Status;
 use Blood72\Iamport\Payloads\Payment;
+use Blood72\Iamport\Payloads\PreparedPayment;
 use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
 
@@ -21,7 +22,7 @@ class Iamport implements IamportService
     const PREPARE_PAYMENT_URI = '/payments/prepare';
 
     /** @var \Blood72\Iamport\Contracts\IamportClientContract */
-    protected $client;
+    protected IamportClient $client;
 
     /**
      * @param \Blood72\Iamport\Contracts\IamportClientContract $client
@@ -62,8 +63,14 @@ class Iamport implements IamportService
      * @return \Illuminate\Support\Collection
      * @throws \Blood72\Iamport\Exceptions\IamportException
      */
-    public function getPayments(string $status = Status::SEARCH_ALL, array $options = [])
+    public function getPayments($status = Status::SEARCH_ALL, array $options = [])
     {
+        if (is_array($status)) {
+            $options = $status;
+
+            $status = $status['status'] ?? Status::SEARCH_ALL;
+        }
+
         if ($status !== Status::SEARCH_ALL) {
             Status::resolve($status);
         }
@@ -166,7 +173,7 @@ class Iamport implements IamportService
 
     /**
      * @param string $merchantUid
-     * @return \Illuminate\Support\Collection
+     * @return \Blood72\Iamport\Payloads\PreparedPayment
      * @throws \Blood72\Iamport\Exceptions\IamportException
      */
     public function getPreparePayment($merchantUid)
@@ -175,13 +182,13 @@ class Iamport implements IamportService
 
         $this->validateResponseStatus($response->status());
 
-        return collect($response->object()->response);
+        return new PreparedPayment($response->object()->response);
     }
 
     /**
      * @param string $merchantUid
      * @param int $amount
-     * @return \Illuminate\Support\Collection
+     * @return \Blood72\Iamport\Payloads\PreparedPayment
      * @throws \Blood72\Iamport\Exceptions\IamportException
      */
     public function setPreparePayment($merchantUid, $amount)
@@ -193,7 +200,7 @@ class Iamport implements IamportService
 
         $this->validateResponseStatus($response->status());
 
-        return collect($response->object()->response);
+        return new PreparedPayment($response->object()->response);
     }
 
     /**
